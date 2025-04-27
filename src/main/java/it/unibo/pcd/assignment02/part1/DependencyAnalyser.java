@@ -16,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class DependencyAnalyser implements DependencyAnalyserLib {
@@ -83,8 +84,6 @@ public class DependencyAnalyser implements DependencyAnalyserLib {
         Promise<PackageDepsReport> packageReport = Promise.promise();
 
         try (Stream<Path> javaFiles = Files.list(packageSrcFolder)) {
-            //if(javaFiles.findAny().isEmpty())
-            //    return Future.succeededFuture(PackageDepsReport.emptyPackageReport(packageSrcFolder));
 
             List<Future<ClassDepsReport>> classReports = javaFiles
                     .filter(e -> e.toString().endsWith(".java"))
@@ -105,7 +104,42 @@ public class DependencyAnalyser implements DependencyAnalyserLib {
     }
 
     @Override
-    public Future<ProjectDepsReport> getProjectDependencies(Path projectSrcFolder) {
-        return null;
+    public Future<ProjectDepsReport> getProjectDependencies(Path projectSrcFolder) throws NullPointerException, IllegalArgumentException {
+        if (projectSrcFolder == null) throw new NullPointerException("The specified project path is null.");
+        if (!Files.isDirectory(projectSrcFolder)) throw new IllegalArgumentException("Path is not a folder.");
+
+        try (Stream<Path> paths = Files.walk(projectSrcFolder)) {
+
+            List<Future<PackageDepsReport>> packageReports = paths
+                    .filter(Files::isDirectory)
+                    .filter(this::hasJavaFiles)
+                    .map(this::getPackageDependencies)
+                    .toList();
+
+            if (packageReports.isEmpty()) {
+                return Future.succeededFuture(ProjectDepsReport.emptyProjectReport(projectSrcFolder));
+            }
+
+            return Future.all(new ArrayList<>(packageReports))
+                    .map(composite -> {
+                        List<PackageDepsReport> reports = composite.list();
+                        return ProjectDepsReport.fromPackageReportList(projectSrcFolder, reports);
+                    })
+                    .onFailure(handleFailure());
+
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to walk the project directory.", e);
+        }
     }
+
+    // Helper method: check if a folder has any .java files inside it
+    private boolean hasJavaFiles(Path dir) {
+        try (Stream<Path> entries = Files.list(dir)) {
+            return entries.anyMatch(file -> file.toString().endsWith(".java"));
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+
 }
