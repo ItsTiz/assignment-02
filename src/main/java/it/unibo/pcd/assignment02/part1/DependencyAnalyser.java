@@ -1,5 +1,6 @@
 package it.unibo.pcd.assignment02.part1;
 
+import com.github.javaparser.JavaParser;
 import io.vertx.core.*;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.ReplyException;
@@ -7,7 +8,6 @@ import io.vertx.core.json.JsonObject;
 import it.unibo.pcd.assignment02.part1.reports.ClassDepsReport;
 import it.unibo.pcd.assignment02.part1.reports.PackageDepsReport;
 import it.unibo.pcd.assignment02.part1.reports.ProjectDepsReport;
-import it.unibo.pcd.assignment02.part1.verticles.DependecyAnalyserVerticle;
 import it.unibo.pcd.assignment02.part1.verticles.FileParserVerticle;
 import it.unibo.pcd.assignment02.part1.utils.Errors;
 
@@ -16,21 +16,35 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import com.github.javaparser.StaticJavaParser;
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.PackageDeclaration;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.FieldDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.expr.ObjectCreationExpr;
+import com.github.javaparser.ast.type.TypeParameter;
+import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
 public class DependencyAnalyser implements DependencyAnalyserLib {
 
     private final Vertx vertx;
+    private final JavaParser parser;
 
     public DependencyAnalyser(){
         this.vertx = Vertx.vertx();
-        deployVerticles();
+        this.parser = new JavaParser();
+        //deployVerticles();
     }
 
     private void deployVerticles() {
-        vertx.deployVerticle(new FileParserVerticle());
-        vertx.deployVerticle(new DependecyAnalyserVerticle());
+        DeploymentOptions options = new DeploymentOptions();
+        options.setInstances(4);
+        vertx.deployVerticle(FileParserVerticle::new, options);
     }
 
     private Future<Message<Object>> doRequest(String address, JsonObject message) {
@@ -62,18 +76,18 @@ public class DependencyAnalyser implements DependencyAnalyserLib {
         if (classSrcFile == null) throw new NullPointerException("The specified path file is null.");
         if (!classSrcFile.toFile().exists()) throw new IllegalArgumentException("File does not exist.");
 
-        JsonObject fileMessage = new JsonObject().put("file", classSrcFile.toString());
-
-        return (doRequest("parser.file", fileMessage))
-                .compose(parserResponse -> {
-                    JsonObject parsedData = (JsonObject) parserResponse.body();
-                    return doRequest("dependency.analyse", parsedData);
-                })
-                .map(analyserResponse -> {
-                    JsonObject analysedData = (JsonObject) analyserResponse.body();
-                    return ClassDepsReport.fromJson(analysedData);
-                })
-                .onFailure(handleFailure());
+        return this.vertx.executeBlocking(() -> {
+            try {
+                return parser
+                        .parse(classSrcFile)
+                        .getResult()
+                        .orElseThrow(() -> new Exception("Parsing failed"));
+            } catch (Exception e) {
+                throw new Exception("Error while trying to parse the file.");
+            }
+        })
+        .map(compilationunit -> ClassDepsReport.fromCompilationUnit(classSrcFile, compilationunit))
+        .onFailure(handleFailure());
     }
 
     @Override

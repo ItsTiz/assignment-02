@@ -2,76 +2,81 @@ package it.unibo.pcd.assignment02.part1;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import it.unibo.pcd.assignment02.part1.reports.ClassDepsReport;
 import it.unibo.pcd.assignment02.part1.reports.PackageDepsReport;
 import it.unibo.pcd.assignment02.part1.reports.ProjectDepsReport;
+import it.unibo.pcd.assignment02.part1.reports.Report;
 
 import java.nio.file.Path;
+import java.util.Set;
 
 public class TryAnalyser {
 
     public static void main(String[] args){
         DependencyAnalyser dep = new DependencyAnalyser();
 
-        Future<ClassDepsReport> report = dep.getClassDependencies(Path.of("C:/Users/Tiziano/Desktop/Tiziano/UNI/Magistrale/Corsi/First year/PCD/assignment-02/src/main/java/it/unibo/pcd/assignment02/part1/DependencyAnalyser.java"));
+//        Future<ClassDepsReport> report = dep.getClassDependencies(Path.of("C:/Users/Tiziano/Desktop/Tiziano/UNI/Magistrale/Corsi/First year/PCD/assignment-02/src/main/java/it/unibo/pcd/assignment02/part1/DependencyAnalyser.java"));
+//
+//        report.onComplete(TryAnalyser::classReportHandler);
+//
+//        Future<PackageDepsReport> packageReport = dep.getPackageDependencies(Path.of("C:\\Users\\Tiziano\\Desktop\\Tiziano\\UNI\\Magistrale\\Corsi\\First year\\PCD\\assignment-02\\src\\main\\java\\it\\unibo\\pcd\\assignment02\\part1"));
+//
+//        packageReport.onComplete(paackageReportHandler());
 
-        report.onComplete(TryAnalyser::classReportHandler);
+        long t0 = System.nanoTime();
 
-        Future<PackageDepsReport> packageReport = dep.getPackageDependencies(Path.of("C:\\Users\\Tiziano\\Desktop\\Tiziano\\UNI\\Magistrale\\Corsi\\First year\\PCD\\assignment-02\\src\\main\\java\\it\\unibo\\pcd\\assignment02\\part1"));
+        Future<ProjectDepsReport> projectReport = dep.getProjectDependencies(
+                Path.of("C:\\Users\\Tiziano\\Desktop\\Tiziano\\UNI\\Triennale\\Test\\Alchemist fork\\Alchemist")
+        );
 
-        packageReport.onComplete(packageDepsReport -> {
-            if(packageDepsReport.succeeded()){
+        long t1 = System.nanoTime();
+
+        long elapsed = t1 - t0;
+
+        projectReport.onComplete(TryAnalyser::projectReportHandler);
+
+        System.out.println("Elapsed: " + elapsed/1_000_000.0 + " ms");
+
+    }
+
+    private static void visualiseReport(Report dependencyReport){
+        if(dependencyReport == null) return;
+
+        Set<String> types = dependencyReport.getTypes();
+        System.out.println("All Types in Class (" + types.size() + ") :");
+        types.forEach(type -> System.out.println("  - " + type));
+
+        Set<String> deps = dependencyReport.getDependencies();
+        System.out.println("All Dependencies in Class (" + deps.size() + ") :");
+        deps.forEach(dep -> System.out.println("  - " + dep));
+    }
+
+    private static Handler<AsyncResult<PackageDepsReport>> paackageReportHandler() {
+        return packageDepsReport -> {
+            if (packageDepsReport.succeeded()) {
                 PackageDepsReport reportObject = packageDepsReport.result();
 
                 System.out.println("Path: " + reportObject.getPackagePath());
 
-                System.out.println("Dependencies: ");
+                visualiseReport(reportObject);
 
-                for (String arg : reportObject.getDependencies()) {
-                    System.out.println(arg);
-                }
-
-                System.out.println("Types: ");
-
-                for (String arg : reportObject.getTypes()) {
-                    System.out.println(arg);
-                }
-            }else{
+            } else {
                 System.out.println("Error while retrieving the report.");
 
             }
-        });
-
-        // Test getProjectDependencies
-        Future<ProjectDepsReport> projectReport = dep.getProjectDependencies(
-                Path.of("C:/Users/Tiziano/Desktop/Tiziano/UNI/Magistrale/Corsi/First year/PCD/assignment-01") // <-- set it to your project root
-        );
-
-        projectReport.onComplete(TryAnalyser::projectReportHandler);
-
-
+        };
     }
 
     private static void classReportHandler(AsyncResult<ClassDepsReport> classDepsReport) {
         if(classDepsReport.succeeded()){
-
             ClassDepsReport reportObject = classDepsReport.result();
 
             System.out.println("Path: " + reportObject.getClassPath());
             System.out.println("Top level name: " + reportObject.getTopLevelType());
             System.out.println("Package Declaration: " + reportObject.getPackageDeclaration());
 
-            System.out.println("Dependencies: ");
-
-            for (String arg : reportObject.getDependencies()) {
-                System.out.println(arg);
-            }
-
-            System.out.println("Types: ");
-
-            for (String arg : reportObject.getTypes()) {
-                System.out.println(arg);
-            }
+            visualiseReport(reportObject);
         }else{
             System.out.println("Error while retrieving the report.");
 
@@ -85,12 +90,7 @@ public class TryAnalyser {
             System.out.println("\n----- Project Report -----");
             System.out.println("Project Root Path: " + reportObject.getProjectPath());
 
-            System.out.println("All Types in Project:");
-            reportObject.getTypes().forEach(type -> System.out.println("  - " + type));
-
-            System.out.println("All Dependencies in Project:");
-            reportObject.getDependencies().forEach(dep -> System.out.println("  - " + dep));
-
+            visualiseReport(reportObject);
         } else {
             System.err.println("Error retrieving the project report: " + projectDepsReport.cause().getMessage());
         }

@@ -6,17 +6,13 @@ import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-public class PackageDepsReport {
+public class PackageDepsReport extends Report{
     private final Path packagePath;
-    private final Set<String> types;
-    private final Set<String> dependencies;
 
     public PackageDepsReport(Path packagePath, Set<String> types, Set<String> dependencies) {
+        super(types, dependencies);
         this.packagePath = packagePath;
-        this.types = types;
-        this.dependencies = dependencies;
     }
 
     public static PackageDepsReport emptyPackageReport(Path classPath){
@@ -38,13 +34,5 @@ public class PackageDepsReport {
 
     public Path getPackagePath() {
         return packagePath;
-    }
-
-    public Set<String> getDependencies() {
-        return dependencies;
-    }
-
-    public Set<String> getTypes() {
-        return types;
     }
 }

@@ -1,48 +1,39 @@
 package it.unibo.pcd.assignment02.part1.reports;
+import com.github.javaparser.ast.CompilationUnit;
 import io.vertx.core.json.JsonObject;
 import java.nio.file.Path;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class ClassDepsReport {
+public class ClassDepsReport extends Report {
     private final Path classPath;
     private final String packageDeclaration;
-    private final String topLevelType;
-    private final Set<String> types;
-    private final Set<String> dependencies;
+    private final String topLevelType;;
 
     public ClassDepsReport(Path classPath, String packageDeclaration, String topLevelType, Set<String> types, Set<String> dependencies) {
+        super(types, dependencies);
         this.classPath = classPath;
         this.packageDeclaration = packageDeclaration;
         this.topLevelType = topLevelType;
-        this.types = types;
-        this.dependencies = dependencies;
     }
 
-    public static ClassDepsReport fromJson(JsonObject analysedData) throws IllegalArgumentException {
-        if(analysedData.isEmpty()){
-            throw new IllegalArgumentException("Json data object is empty.");
+    public static ClassDepsReport fromCompilationUnit(Path classPath, CompilationUnit unit) throws IllegalArgumentException {
+        if(unit == null){
+            throw new IllegalArgumentException("Parser root is invalid.");
         }
 
-        JsonObject reportJson = analysedData.getJsonObject("classReport");
-
         return new ClassDepsReport(
-                Path.of(reportJson.getString("classPath")),
-                reportJson.getString("packageDeclaration"),
-                reportJson.getString("className"),
-                reportJson.getJsonArray("types").stream().map(Object::toString).collect(Collectors.toSet()),
-                reportJson.getJsonArray("dependencies").stream().map(Object::toString).collect(Collectors.toSet())
+                classPath,
+                unit.getPackageDeclaration().isPresent() ? unit.getPackageDeclaration().get().getNameAsString() : "",
+                unit.getPrimaryTypeName().isPresent() ? unit.getPrimaryTypeName().get() : "",
+                new HashSet<>(unit.getTypes().stream().map(e -> e.getName().asString()).toList()),
+                new HashSet<>(unit.getImports().stream().map(e -> e.getName().asString()).toList())
         );
     }
 
     public Path getClassPath() {
         return classPath;
-    }
-
-    public Set<String> getDependencies() {
-        return dependencies;
     }
 
     public String getPackageDeclaration() {
@@ -51,9 +42,5 @@ public class ClassDepsReport {
 
     public String getTopLevelType() {
         return topLevelType;
-    }
-
-    public Set<String> getTypes() {
-        return types;
     }
 }

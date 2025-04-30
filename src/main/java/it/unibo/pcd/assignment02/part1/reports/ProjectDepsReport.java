@@ -5,15 +5,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class ProjectDepsReport {
+public class ProjectDepsReport extends Report {
     private final Path projectPath;
-    private final Set<String> types;
-    private final Set<String> dependencies;
 
     public ProjectDepsReport(Path projectPath, Set<String> types, Set<String> dependencies) {
+        super(types, dependencies);
         this.projectPath = projectPath;
-        this.types = types;
-        this.dependencies = dependencies;
     }
 
     public static ProjectDepsReport emptyProjectReport(Path projectPath) {
@@ -38,13 +35,5 @@ public class ProjectDepsReport {
 
     public Path getProjectPath() {
         return projectPath;
-    }
-
-    public Set<String> getTypes() {
-        return types;
-    }
-
-    public Set<String> getDependencies() {
-        return dependencies;
     }
 }

@@ -4,6 +4,7 @@ import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import it.unibo.pcd.assignment02.part1.utils.Errors;
@@ -27,9 +28,7 @@ public class FileParserVerticle extends AbstractVerticle {
 
         parseAst(filePath)
                 .onSuccess(compilationUnit -> {
-                    JsonObject result = new JsonObject()
-                        .put("ast", convertCompilationUnitToJson(filePath, compilationUnit));
-                    message.reply(result);
+                    message.reply(convertCompilationUnitToJson(filePath, compilationUnit));
                 })
                 .onFailure(throwable -> {
                     message.fail(Errors.PARSING_ERROR.getCode(), "Error while parsing the file.");
@@ -47,15 +46,14 @@ public class FileParserVerticle extends AbstractVerticle {
     }
 
     private Future<CompilationUnit> parseAst(String content) {
-        return Future.future(promise -> {
+        return this.vertx.executeBlocking(() -> {
             try {
-                CompilationUnit cu = parser
+                return parser
                         .parse(Path.of(content))
                         .getResult()
                         .orElseThrow(() -> new Exception("Parsing failed"));
-                promise.complete(cu);
             } catch (Exception e) {
-                promise.fail(e);
+                throw new Exception("Error while trying to parse the file.");
             }
         });
     }
