@@ -2,6 +2,7 @@ package it.unibo.pcd.assignment02.part2.controller;
 
 import io.reactivex.rxjava3.functions.Action;
 import io.reactivex.rxjava3.functions.Consumer;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import it.unibo.pcd.assignment02.part2.model.DepAnalyserModel;
 import it.unibo.pcd.assignment02.part2.view.DepAnalyserView;
 import it.unibo.pcd.assignment02.part2.utils.Util;
@@ -34,17 +35,28 @@ public class DepAnalyserController implements InputListener {
     public void started() {
         Util.log("Process started. Creating pipeline for project folder: " + model.getProjectSourceRoot());
         model.createPipeline();
-        subscribeToPipeline();
+        subscribeToNodes();
+        subscribeToEdges();
     }
 
-    public void subscribeToPipeline(){
+    public void subscribeToNodes(){
+        var t0 = System.nanoTime();
         model.getNodes()
-             .subscribe(e-> Util.log(e.toString()), handleOnError(), handleOnComplete());
+                .observeOn(Schedulers.newThread())
+                .subscribe(e-> Util.log("[NODESUB]" + e.toString()), handleOnError(), handleOnComplete(t0));
     }
 
-    private Action handleOnComplete() {
+    public void subscribeToEdges(){
+        var t0 = System.nanoTime();
+        model.getEdges()
+                .observeOn(Schedulers.newThread())
+                .subscribe(e-> Util.log("[EDGESUB]" + e.toString()), handleOnError(), handleOnComplete(t0));
+    }
+
+    private Action handleOnComplete(long t0) {
         return () -> {
             Util.log("File walking complete");
+            Util.log("Time elapsed: " + (System.nanoTime() - t0) / 1_000_000 + "ms");
         };
     }
 

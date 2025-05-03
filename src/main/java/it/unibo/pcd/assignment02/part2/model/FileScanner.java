@@ -2,6 +2,7 @@ package it.unibo.pcd.assignment02.part2.model;
 
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.subjects.PublishSubject;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,6 +29,6 @@ public class FileScanner {
                 System.out.println("An error occurred while walking the project tree.");
                 emitter.onError(e);
             }
-        }).subscribeOn(Schedulers.io());
+        }).subscribeOn(Schedulers.io()).cache();
     }
 }

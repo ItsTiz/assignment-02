@@ -42,6 +42,7 @@ public class DepAnalyserView extends JFrame implements ActionListener {
         startButton.addActionListener(this);
 
         add(topPanel, BorderLayout.NORTH);
+        graphPanel.setSize(screenWidth, screenHeight - topPanel.getHeight());
         add(graphPanel, BorderLayout.CENTER);
 
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
