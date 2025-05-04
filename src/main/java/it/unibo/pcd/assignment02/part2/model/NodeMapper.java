@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.stream.Collectors;
 
 import static it.unibo.pcd.assignment02.part2.utils.Util.extractName;
+import static it.unibo.pcd.assignment02.part2.utils.Util.extractPackageName;
 
 public class NodeMapper {
 
@@ -19,13 +20,13 @@ public class NodeMapper {
                     (HashSet<Node>) e.getDependencies()
                     .stream()
                     .filter(str -> !str.contains("."))
-                    .map(s -> new Node(extractName(s, ".")))
+                    .map(s -> new Node(extractName(s, "."), extractPackageName(s)))
                     .collect(Collectors.toSet());
             String nodeName = e.getFileName();
             if(nodeName.isEmpty()){
                 nodeName = extractName(e.getFilePath(), "\\\\");
             }
-            temp.add(new Node(nodeName));
+            temp.add(new Node(nodeName, e.getPackageName()));
             return Observable.fromIterable(temp).subscribeOn(Schedulers.computation());
         };
     }

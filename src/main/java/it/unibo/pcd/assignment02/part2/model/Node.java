@@ -6,10 +6,21 @@ import java.util.Set;
 
 public class Node {
     public final String name;
-    public final Set<String> dependencies = new HashSet<>();
 
-    public Node(String name) {
+    public final String packageName;
+
+    public final Set<String> dependencies = new HashSet<>();
+    public Node(String name, String packageName) {
         this.name = name;
+        this.packageName = packageName;
+    }
+
+    public String getPackageName() {
+        return packageName;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public Set<String> getDependencies() {
@@ -18,7 +29,8 @@ public class Node {
 
     @Override
     public String toString(){
-        return "Node: " + name;
+        return "Node: " + name + "\n"
+                + "Package: " + packageName + "\n";
     }
 
     @Override

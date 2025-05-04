@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.stream.Collectors;
 
 import static it.unibo.pcd.assignment02.part2.utils.Util.extractName;
+import static it.unibo.pcd.assignment02.part2.utils.Util.extractPackageName;
 
 public class EdgeMapper {
 
@@ -19,13 +20,13 @@ public class EdgeMapper {
             if(nodeName.isEmpty()){
                 nodeName = extractName(e.getFilePath(), "\\\\");
             }
-            Node startNode = new Node(nodeName);
+            Node startNode = new Node(nodeName, e.getPackageName());
             HashSet<Edge> temp = new HashSet<>();
             if(!e.getDependencies().isEmpty()) {
                 temp = (HashSet<Edge>) e.getDependencies()
                         .stream()
                         .filter(str -> str.contains("."))
-                        .map(s -> new Edge(startNode, new Node(extractName(s, "\\."))))
+                        .map(s -> new Edge(startNode, new Node(extractName(s, "\\."), extractPackageName(s))))
                         .collect(Collectors.toSet());
 
             }

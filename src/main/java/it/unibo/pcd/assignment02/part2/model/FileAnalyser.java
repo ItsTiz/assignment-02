@@ -20,7 +20,6 @@ public class FileAnalyser {
     }
 
     public Function<File, ParsedJavaFile> dependenciesMapper() {
-        System.out.println("Should do it once");
         return file -> {
             ParseResult<CompilationUnit> result = parser.parse(file);
             String fileName = "";

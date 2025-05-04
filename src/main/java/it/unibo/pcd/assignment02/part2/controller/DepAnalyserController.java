@@ -4,6 +4,8 @@ import io.reactivex.rxjava3.functions.Action;
 import io.reactivex.rxjava3.functions.Consumer;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import it.unibo.pcd.assignment02.part2.model.DepAnalyserModel;
+import it.unibo.pcd.assignment02.part2.model.Edge;
+import it.unibo.pcd.assignment02.part2.model.Node;
 import it.unibo.pcd.assignment02.part2.view.DepAnalyserView;
 import it.unibo.pcd.assignment02.part2.utils.Util;
 
@@ -43,14 +45,32 @@ public class DepAnalyserController implements InputListener {
         var t0 = System.nanoTime();
         model.getNodes()
                 .observeOn(Schedulers.newThread())
-                .subscribe(e-> Util.log("[NODESUB]" + e.toString()), handleOnError(), handleOnComplete(t0));
+                .subscribe(consumeNodeByPaint(), handleOnError(), handleOnComplete(t0));
     }
 
     public void subscribeToEdges(){
         var t0 = System.nanoTime();
         model.getEdges()
                 .observeOn(Schedulers.newThread())
-                .subscribe(e-> Util.log("[EDGESUB]" + e.toString()), handleOnError(), handleOnComplete(t0));
+                .subscribe(consumeEdgeByPaint(), handleOnError(), handleOnComplete(t0));
+    }
+
+    private Consumer<Node> consumeNodeByPaint() {
+        if(view.isEmpty()) return consumeNodeByLog();
+        return e -> view.get().signalNodePaint(e);
+    }
+
+    private Consumer<Edge> consumeEdgeByPaint() {
+        if(view.isEmpty()) return consumeEdgeByLog();
+        return e -> view.get().signalEdgePaint(e);
+    }
+
+    private Consumer<Node> consumeNodeByLog() {
+        return e -> Util.log("[NODE]" + e.toString());
+    }
+
+    private Consumer<Edge> consumeEdgeByLog() {
+        return e -> Util.log("[EDGE]" + e.toString());
     }
 
     private Action handleOnComplete(long t0) {

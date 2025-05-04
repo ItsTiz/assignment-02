@@ -1,6 +1,8 @@
 package it.unibo.pcd.assignment02.part2.view;
 
 import it.unibo.pcd.assignment02.part2.controller.InputListener;
+import it.unibo.pcd.assignment02.part2.model.Edge;
+import it.unibo.pcd.assignment02.part2.model.Node;
 
 import javax.swing.*;
 import java.awt.*;
@@ -38,17 +40,23 @@ public class DepAnalyserView extends JFrame implements ActionListener {
         topPanel.add(startButton);
         topPanel.add(classCounter);
         topPanel.add(depCounter);
-
-        startButton.addActionListener(this);
-
         add(topPanel, BorderLayout.NORTH);
-        graphPanel.setSize(screenWidth, screenHeight - topPanel.getHeight());
-        add(graphPanel, BorderLayout.CENTER);
+
+        graphPanel.setPreferredSize(new Dimension(screenWidth, 2000)); // Tall enough for scrolling
+
+        JScrollPane scrollPane = new JScrollPane(graphPanel);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+
+        add(scrollPane, BorderLayout.CENTER);
 
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 
+        startButton.addActionListener(this);
+
         setVisible(true);
     }
+
 
     public void addListener(InputListener listener) {
         listeners.add(listener);
@@ -73,5 +81,13 @@ public class DepAnalyserView extends JFrame implements ActionListener {
             return Optional.of(chooser.getSelectedFile());
         }
         return Optional.empty();
+    }
+
+    public void signalNodePaint(Node toPaint){
+        SwingUtilities.invokeLater(() -> graphPanel.requestNodePaint(toPaint));
+    }
+
+    public void signalEdgePaint(Edge toPaint){
+        SwingUtilities.invokeLater(() -> graphPanel.requestEdgePaint(toPaint));
     }
 }

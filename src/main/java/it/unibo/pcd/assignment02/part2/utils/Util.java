@@ -22,4 +22,12 @@ public class Util {
             nodeName = nodeName.replaceFirst("\\.java$", "");
         return nodeName;
     }
+
+    public static String extractPackageName(String fullyQualifiedName) {
+        if (fullyQualifiedName == null || !fullyQualifiedName.contains(".")) {
+            return "";
+        }
+        int lastDotIndex = fullyQualifiedName.lastIndexOf('.');
+        return fullyQualifiedName.substring(0, lastDotIndex);
+    }
 }
