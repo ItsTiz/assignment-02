@@ -102,6 +102,10 @@ public class GraphPanel extends JPanel {
             int centerX = (panelWidth / LAYOUT_COLUMNS) * column + (panelWidth / LAYOUT_COLUMNS) / 2;
             int centerY = LAYOUT_COLUMN_SPACING + row * LAYOUT_ROW_SPACING;
 
+            if(centerY >= parent.getGraphPanelHeight()) {
+                parent.setGraphPanelHeight(centerY + LAYOUT_ROW_SPACING);
+            }
+
             Map<Node, Point> positions = preparePackage(packageName, new Point(centerX, centerY));
             globalPositions.put(packageName, positions);
             index++;

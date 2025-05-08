@@ -45,9 +45,9 @@ public class DepAnalyserModel {
 
     private Observable<ParsedJavaFile> getDataStream(){
         return scanner.createFileStream()
-                .doOnNext(e-> System.out.println("[FILE]: "+e))
-                .map(analyser.dependenciesMapper())
-                .doOnNext(e-> System.out.println("[PARSED REPORT]: "+e));
+                //.doOnNext(e-> System.out.println("[FILE]: "+e))
+                .map(analyser.dependenciesMapper());
+                //.doOnNext(e-> System.out.println("[PARSED REPORT]: "+e));
     }
 
     public Observable<Node> getNodes() {

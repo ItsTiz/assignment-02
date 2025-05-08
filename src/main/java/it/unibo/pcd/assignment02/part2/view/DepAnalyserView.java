@@ -15,11 +15,12 @@ import java.util.Optional;
 public class DepAnalyserView extends JFrame implements ActionListener {
     private final int screenWidth;
     private final int screenHeight;
-    private final JFileChooser chooser = new JFileChooser("C:\\Users\\Tiziano\\Desktop\\Tiziano\\UNI\\Magistrale\\Corsi\\First year\\PCD");;
+    private int graphPanelHeight;
+    private final JFileChooser chooser = new JFileChooser("C:\\Users\\Tiziano\\Desktop\\Tiziano\\UNI\\Magistrale\\Corsi\\First year\\PCD");
     private final JButton chooseProjectButton = new JButton("Choose Project Folder");
     private final JButton startButton = new JButton("Start");
-    private final JLabel classCounter = new JLabel("Classes/Interfaces: 0");
-    private final JLabel depCounter = new JLabel("Dependencies: 0");
+    private final JLabel classCounter = new JLabel("");
+    private final JLabel depCounter = new JLabel("");
     private final GraphPanel graphPanel = new GraphPanel(this);
     private final ArrayList<InputListener> listeners = new ArrayList<>();
     private int classCount;
@@ -28,10 +29,9 @@ public class DepAnalyserView extends JFrame implements ActionListener {
     public DepAnalyserView(int screenWidth, int screenHeight) {
         super("Dependency Analyser");
         this.screenWidth = screenWidth;
-        this.screenHeight = screenHeight;
+        this.screenHeight = graphPanelHeight = screenHeight;
         setupUI();
     }
-
     private void setupUI() {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(screenWidth, screenHeight);
@@ -44,7 +44,7 @@ public class DepAnalyserView extends JFrame implements ActionListener {
         topPanel.add(depCounter);
         add(topPanel, BorderLayout.NORTH);
 
-        graphPanel.setPreferredSize(new Dimension(screenWidth, 2000)); // Tall enough for scrolling
+        graphPanel.setPreferredSize(new Dimension(screenWidth, getGraphPanelHeight())); // Tall enough for scrolling
 
         JScrollPane scrollPane = new JScrollPane(graphPanel);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -60,6 +60,16 @@ public class DepAnalyserView extends JFrame implements ActionListener {
         setVisible(true);
     }
 
+    public void setGraphPanelHeight(int graphPanelHeight) {
+        this.graphPanelHeight = graphPanelHeight;
+        graphPanel.setPreferredSize(new Dimension(screenWidth, graphPanelHeight));
+        graphPanel.revalidate();
+        //graphPanel.repaint();
+    }
+
+    public int getGraphPanelHeight() {
+        return graphPanelHeight;
+    }
 
     public void addListener(InputListener listener) {
         listeners.add(listener);
