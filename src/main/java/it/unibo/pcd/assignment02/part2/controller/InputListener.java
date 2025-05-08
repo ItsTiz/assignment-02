@@ -4,4 +4,5 @@ public interface InputListener {
 
     void started ();
 
+    void fileChooserTriggered();
 }

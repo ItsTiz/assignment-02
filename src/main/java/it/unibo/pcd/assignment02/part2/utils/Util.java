@@ -18,8 +18,9 @@ public class Util {
         if(stringPath.length > 0) {
             nodeName = stringPath[stringPath.length - 1];
         }
-        if(splitter.equals("\\\\"))
+        if(splitter.equals("\\\\")) {
             nodeName = nodeName.replaceFirst("\\.java$", "");
+        }
         return nodeName;
     }
 

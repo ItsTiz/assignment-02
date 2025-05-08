@@ -2,13 +2,12 @@ package it.unibo.pcd.assignment02.part1;
 
 import com.github.javaparser.JavaParser;
 import io.vertx.core.*;
-import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.ReplyException;
-import io.vertx.core.json.JsonObject;
+import io.vertx.core.eventbus.ReplyFailure;
 import it.unibo.pcd.assignment02.part1.reports.ClassDepsReport;
 import it.unibo.pcd.assignment02.part1.reports.PackageDepsReport;
 import it.unibo.pcd.assignment02.part1.reports.ProjectDepsReport;
-import it.unibo.pcd.assignment02.part1.verticles.FileParserVerticle;
+import it.unibo.pcd.assignment02.part1.utils.Helper;
 import it.unibo.pcd.assignment02.part1.utils.Errors;
 
 import java.io.IOException;
@@ -18,28 +17,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class DependencyAnalyser implements DependencyAnalyserLib {
+public class AsyncDependencyAnalyser implements DependencyAnalyserLib {
 
     private final Vertx vertx;
     private final JavaParser parser;
 
-    public DependencyAnalyser(){
+    public AsyncDependencyAnalyser(){
         this.vertx = Vertx.vertx();
         this.parser = new JavaParser();
-        //deployVerticles();
-    }
-
-    private void deployVerticles() {
-        DeploymentOptions options = new DeploymentOptions();
-        options.setInstances(4);
-        vertx.deployVerticle(FileParserVerticle::new, options);
-    }
-
-    private Future<Message<Object>> doRequest(String address, JsonObject message) {
-        if(message.isEmpty()) {
-            return Future.failedFuture("Message was empty.");
-        }
-        return vertx.eventBus().request(address, message);
     }
 
     private Handler<Throwable> handleFailure() {
@@ -50,7 +35,6 @@ public class DependencyAnalyser implements DependencyAnalyserLib {
 
                 switch (error) {
                     case PARSING_ERROR -> System.err.println("Parsing error: " + re.getMessage());
-                    case ANALYSER_ERROR -> System.err.println("Dependency analysis error: " + re.getMessage());
                     case UNKNOWN_ERROR -> System.err.println("Unknown processing error: " + re.getMessage());
                 }
             } else {
@@ -65,17 +49,17 @@ public class DependencyAnalyser implements DependencyAnalyserLib {
         if (!classSrcFile.toFile().exists()) throw new IllegalArgumentException("File does not exist.");
 
         return this.vertx.executeBlocking(() -> {
-            try {
-                return parser
-                        .parse(classSrcFile)
-                        .getResult()
-                        .orElseThrow(() -> new Exception("Parsing failed"));
-            } catch (Exception e) {
-                throw new Exception("Error while trying to parse the file.");
-            }
-        })
-        .map(compilationunit -> ClassDepsReport.fromCompilationUnit(classSrcFile, compilationunit))
-        .onFailure(handleFailure());
+            var cu = parser.parse(classSrcFile)
+                    .getResult()
+                    .orElseThrow(() -> new Exception("Parsing failed"));
+            return ClassDepsReport.fromCompilationUnit(classSrcFile, cu);
+        }).recover(err -> Future.failedFuture(new ReplyException(
+                ReplyFailure.RECIPIENT_FAILURE,
+                Errors.PARSING_ERROR.getCode(),
+                "Parsing failed: " + err.getMessage()
+        )));
+
+
     }
 
     @Override
@@ -83,10 +67,7 @@ public class DependencyAnalyser implements DependencyAnalyserLib {
         if (packageSrcFolder == null) throw new NullPointerException("The specified path file is null.");
         if (!Files.isDirectory(packageSrcFolder)) throw new IllegalArgumentException("Path is not a folder.");
 
-        Promise<PackageDepsReport> packageReport = Promise.promise();
-
         try (Stream<Path> javaFiles = Files.list(packageSrcFolder)) {
-
             List<Future<ClassDepsReport>> classReports = javaFiles
                     .filter(e -> e.toString().endsWith(".java"))
                     .map(this::getClassDependencies)
@@ -100,9 +81,13 @@ public class DependencyAnalyser implements DependencyAnalyserLib {
                     .onFailure(handleFailure());
 
         } catch (IOException e) {
-            packageReport.fail("An error occurred while listing files in the package.");
-            throw new RuntimeException(e);
+            throw new ReplyException(
+                    ReplyFailure.RECIPIENT_FAILURE,
+                    Errors.UNKNOWN_ERROR.getCode(),
+                    "Failed to walk the package directory: " + e.getMessage()
+            );
         }
+
     }
 
     @Override
@@ -114,7 +99,7 @@ public class DependencyAnalyser implements DependencyAnalyserLib {
 
             List<Future<PackageDepsReport>> packageReports = paths
                     .filter(Files::isDirectory)
-                    .filter(this::hasJavaFiles)
+                    .filter(Helper::hasJavaFiles)
                     .map(this::getPackageDependencies)
                     .toList();
 
@@ -130,18 +115,11 @@ public class DependencyAnalyser implements DependencyAnalyserLib {
                     .onFailure(handleFailure());
 
         } catch (IOException e) {
-            throw new RuntimeException("Failed to walk the project directory.", e);
+            throw new ReplyException(
+                    ReplyFailure.RECIPIENT_FAILURE,
+                    Errors.UNKNOWN_ERROR.getCode(),
+                    "Failed to walk the project directory: " + e.getMessage()
+            );
         }
     }
-
-    // Helper method: check if a folder has any .java files inside it
-    private boolean hasJavaFiles(Path dir) {
-        try (Stream<Path> entries = Files.list(dir)) {
-            return entries.anyMatch(file -> file.toString().endsWith(".java"));
-        } catch (IOException e) {
-            return false;
-        }
-    }
-
-
 }

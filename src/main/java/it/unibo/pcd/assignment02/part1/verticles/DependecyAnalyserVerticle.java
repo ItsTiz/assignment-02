@@ -23,7 +23,7 @@ public class DependecyAnalyserVerticle extends AbstractVerticle {
             JsonObject result = generateMessageReply(astJson);
             message.reply(result);
         }else{
-            message.fail(Errors.ANALYSER_ERROR.getCode(), "Failed to analyse parsing result.");
+            //message.fail(Errors.ANALYSER_ERROR.getCode(), "Failed to analyse parsing result.");
         }
     }
 

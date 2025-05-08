@@ -41,6 +41,11 @@ public class DepAnalyserController implements InputListener {
         subscribeToEdges();
     }
 
+    @Override
+    public void fileChooserTriggered() {
+        model.setProjectSourceRoot(getDirectory());
+    }
+
     public void subscribeToNodes(){
         var t0 = System.nanoTime();
         model.getNodes()
