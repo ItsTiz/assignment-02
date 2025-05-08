@@ -102,7 +102,7 @@ public class GraphPanel extends JPanel {
             int centerX = (panelWidth / LAYOUT_COLUMNS) * column + (panelWidth / LAYOUT_COLUMNS) / 2;
             int centerY = LAYOUT_COLUMN_SPACING + row * LAYOUT_ROW_SPACING;
 
-            if(centerY >= parent.getGraphPanelHeight()) {
+            if(centerY >= parent.getScreenHeight()) {
                 parent.setGraphPanelHeight(centerY + LAYOUT_ROW_SPACING);
             }
 

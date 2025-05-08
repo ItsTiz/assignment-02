@@ -15,7 +15,6 @@ import java.util.Optional;
 public class DepAnalyserView extends JFrame implements ActionListener {
     private final int screenWidth;
     private final int screenHeight;
-    private int graphPanelHeight;
     private final JFileChooser chooser = new JFileChooser("C:\\Users\\Tiziano\\Desktop\\Tiziano\\UNI\\Magistrale\\Corsi\\First year\\PCD");
     private final JButton chooseProjectButton = new JButton("Choose Project Folder");
     private final JButton startButton = new JButton("Start");
@@ -25,13 +24,13 @@ public class DepAnalyserView extends JFrame implements ActionListener {
     private final ArrayList<InputListener> listeners = new ArrayList<>();
     private int classCount;
     private int dependenciesCount;
-
     public DepAnalyserView(int screenWidth, int screenHeight) {
         super("Dependency Analyser");
         this.screenWidth = screenWidth;
-        this.screenHeight = graphPanelHeight = screenHeight;
+        this.screenHeight = screenHeight;
         setupUI();
     }
+
     private void setupUI() {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(screenWidth, screenHeight);
@@ -44,7 +43,7 @@ public class DepAnalyserView extends JFrame implements ActionListener {
         topPanel.add(depCounter);
         add(topPanel, BorderLayout.NORTH);
 
-        graphPanel.setPreferredSize(new Dimension(screenWidth, getGraphPanelHeight())); // Tall enough for scrolling
+        graphPanel.setPreferredSize(new Dimension(screenWidth, screenHeight)); // Tall enough for scrolling
 
         JScrollPane scrollPane = new JScrollPane(graphPanel);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -60,15 +59,13 @@ public class DepAnalyserView extends JFrame implements ActionListener {
         setVisible(true);
     }
 
-    public void setGraphPanelHeight(int graphPanelHeight) {
-        this.graphPanelHeight = graphPanelHeight;
-        graphPanel.setPreferredSize(new Dimension(screenWidth, graphPanelHeight));
-        graphPanel.revalidate();
-        //graphPanel.repaint();
+    public int getScreenHeight() {
+        return screenHeight;
     }
 
-    public int getGraphPanelHeight() {
-        return graphPanelHeight;
+    public void setGraphPanelHeight(int graphPanelHeight) {
+        graphPanel.setPreferredSize(new Dimension(screenWidth, graphPanelHeight));
+        graphPanel.revalidate();
     }
 
     public void addListener(InputListener listener) {
