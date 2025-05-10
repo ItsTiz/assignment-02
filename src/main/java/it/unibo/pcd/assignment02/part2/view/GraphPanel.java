@@ -24,6 +24,8 @@ public class GraphPanel extends JPanel {
     private final Map<String, Map<Node, Point>> globalPositions = new HashMap<>();
     private final List<Edge> edgesToPaint = new ArrayList<>();
 
+    private Node selectedNode = null;  // Track the selected node
+
     public GraphPanel(DepAnalyserView parent) {
         this.parent = parent;
         setBackground(Color.WHITE);
@@ -35,17 +37,28 @@ public class GraphPanel extends JPanel {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
+                mouseHandler(e);
+            }
+
+            private void mouseHandler(MouseEvent e) {
                 Point click = e.getPoint();
                 for (Map.Entry<Node, Point> entry : getActualEdges().entrySet()) {
-                    if(Math.abs(entry.getValue().x - click.x) <= NODE_RADIUS
-                        && Math.abs(entry.getValue().y - click.y) <= NODE_RADIUS){
+                    if (Math.abs(entry.getValue().x - click.x) <= NODE_RADIUS
+                            && Math.abs(entry.getValue().y - click.y) <= NODE_RADIUS) {
+                        selectedNode = entry.getKey();
+                        repaint();
                         parent.inspectNode(entry.getKey());
                         break;
                     }
-
                 }
             }
         };
+    }
+
+
+    public void resetSelectedNode() {
+        selectedNode = null;
+        repaint();
     }
 
     public Map<Node, Point> getActualEdges(){
@@ -102,7 +115,7 @@ public class GraphPanel extends JPanel {
             int centerX = (panelWidth / LAYOUT_COLUMNS) * column + (panelWidth / LAYOUT_COLUMNS) / 2;
             int centerY = LAYOUT_COLUMN_SPACING + row * LAYOUT_ROW_SPACING;
 
-            if(centerY >= parent.getScreenHeight()) {
+            if (centerY >= parent.getScreenHeight()) {
                 parent.setGraphPanelHeight(centerY + LAYOUT_ROW_SPACING);
             }
 
@@ -113,14 +126,12 @@ public class GraphPanel extends JPanel {
     }
 
     private void printNodesByPackage(String packageName, Graphics g, Map<Node, Point> positions) {
-
         Color packageColor = packageToColors.get(packageName);
 
         for (Map.Entry<Node, Point> entry : positions.entrySet()) {
-
             Node node = entry.getKey();
             Point p = entry.getValue();
-            drawNodeGraphics(g, node.name, p , packageColor);
+            drawNodeGraphics(g, node.name, p, packageColor);
         }
     }
 
@@ -131,7 +142,7 @@ public class GraphPanel extends JPanel {
         }
     }
 
-    private void drawNodeGraphics(Graphics g, String name , Point pos, Color randomColor) {
+    private void drawNodeGraphics(Graphics g, String name, Point pos, Color randomColor) {
         int radius = (int) NODE_RADIUS;
         Graphics2D g2 = (Graphics2D) g;
         g2.setColor(randomColor);
@@ -153,13 +164,19 @@ public class GraphPanel extends JPanel {
 
             if (from != null && to != null) {
                 Pair<Point, Point> adjustedCoord = adjustCoordinates(from, to);
+                if (selectedNode != null && selectedNode.equals(edge.getFromNode())) {
+                    g2.setColor(Color.RED);
+                    g2.setStroke(new BasicStroke(EDGE_STROKE_WIDTH + 1));
+                } else {
+                    g2.setColor(ARROW_BODY_COLOR);
+                    g2.setStroke(new BasicStroke(EDGE_STROKE_WIDTH));
+                }
                 drawArrow(g2, adjustedCoord.first, adjustedCoord.second);
             }
         }
     }
 
     private void drawArrow(Graphics2D g2, Point from, Point to) {
-        g2.setColor(ARROW_BODY_COLOR);
         g2.drawLine(from.x, from.y, to.x, to.y);
 
         double dy = to.y - from.y;
@@ -184,3 +201,4 @@ public class GraphPanel extends JPanel {
         drawNodes(g);
     }
 }
+

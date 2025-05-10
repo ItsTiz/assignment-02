@@ -118,4 +118,10 @@ public class DepAnalyserView extends JFrame implements ActionListener {
     public void inspectNode(Node node){
         DetailsFrame.showForNode(this, node);
     }
+
+    public void resetSelectedNode() {
+        graphPanel.resetSelectedNode();
+        repaint();
+    }
+
 }

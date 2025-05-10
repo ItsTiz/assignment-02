@@ -17,11 +17,14 @@ public class EdgeMapper {
     public Function<ParsedJavaFile, Observable<Edge>> flattenToEdges() {
         return e -> {
             String nodeName = e.getFileName();
+
             if(nodeName.isEmpty()){
                 nodeName = extractName(e.getFilePath(), "\\\\");
             }
+
             Node startNode = new Node(nodeName, e.getPackageName());
             HashSet<Edge> temp = new HashSet<>();
+
             if(!e.getDependencies().isEmpty()) {
                 temp = (HashSet<Edge>) e.getDependencies()
                         .stream()
@@ -30,6 +33,7 @@ public class EdgeMapper {
                         .collect(Collectors.toSet());
 
             }
+
             return Observable.fromIterable(temp).subscribeOn(Schedulers.computation());
         };
     }

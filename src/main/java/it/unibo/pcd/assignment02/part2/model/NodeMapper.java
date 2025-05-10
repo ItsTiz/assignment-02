@@ -23,16 +23,14 @@ public class NodeMapper {
     public Function<ParsedJavaFile, Observable<Node>> flattenToNodes() {
         return e -> {
             Set<Node> result = new HashSet<>();
-
             String nodeName = e.getFileName();
+
             if (nodeName.isEmpty()) {
                 nodeName = extractName(e.getFilePath(), "\\\\");
             }
 
             Node mainNode = new Node(nodeName, e.getPackageName());
-
             mainNode.setDependencies(e.getDependencies());
-
             result.add(mainNode);
 
             e.getDependencies().stream()
