@@ -14,6 +14,7 @@ public class DependencyAnalyser {
         var view = new DepAnalyserView(SCREEN_WIDTH, SCREEN_HEIGHT);
         var controller = new DepAnalyserController(model);
         view.addListener(controller);
+        model.addListener(controller);
         controller.attachView(view);
     }
 }

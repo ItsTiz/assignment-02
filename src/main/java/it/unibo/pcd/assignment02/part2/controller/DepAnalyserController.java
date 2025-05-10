@@ -12,7 +12,7 @@ import it.unibo.pcd.assignment02.part2.utils.Util;
 import java.io.File;
 import java.util.Optional;
 
-public class DepAnalyserController implements InputListener {
+public class DepAnalyserController implements InputListener, ModelUpdatesListener {
 
     private Optional<DepAnalyserView> view;
     private final DepAnalyserModel model;
@@ -37,13 +37,17 @@ public class DepAnalyserController implements InputListener {
     public void started() {
         Util.log("Process started. Creating pipeline for project folder: " + model.getProjectSourceRoot());
         model.createPipeline();
-        subscribeToNodes();
-        subscribeToEdges();
     }
 
     @Override
     public void fileChooserTriggered() {
         model.setProjectSourceRoot(getDirectory());
+    }
+
+    @Override
+    public void subscriptionReady() {
+        subscribeToNodes();
+        subscribeToEdges();
     }
 
     public void subscribeToNodes(){
