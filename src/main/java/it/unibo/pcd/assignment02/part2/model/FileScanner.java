@@ -2,7 +2,6 @@ package it.unibo.pcd.assignment02.part2.model;
 
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
-import io.reactivex.rxjava3.subjects.PublishSubject;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,7 +10,7 @@ import java.nio.file.Path;
 import java.util.stream.Stream;
 
 public class FileScanner {
-    private File projectSourceRoot;
+    private final File projectSourceRoot;
 
     public FileScanner(File projectSourceRoot) {
         this.projectSourceRoot = projectSourceRoot;

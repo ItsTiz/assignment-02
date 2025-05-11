@@ -81,7 +81,6 @@ public class DepAnalyserModel {
         }
     }
 
-
     public Observable<Node> getNodes() {
         return stream
                 .flatMap(nodeMapper.flattenToNodes())

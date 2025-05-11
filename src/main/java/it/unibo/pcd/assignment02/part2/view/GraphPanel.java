@@ -1,10 +1,8 @@
 package it.unibo.pcd.assignment02.part2.view;
 
-import it.unibo.pcd.assignment02.part2.model.DepAnalyserModel;
 import it.unibo.pcd.assignment02.part2.model.Edge;
 import it.unibo.pcd.assignment02.part2.model.Node;
 import it.unibo.pcd.assignment02.part2.utils.Pair;
-import it.unibo.pcd.assignment02.part2.utils.Util;
 
 import static it.unibo.pcd.assignment02.part2.utils.UIUtil.*;
 
@@ -24,7 +22,7 @@ public class GraphPanel extends JPanel {
     private final Map<String, Map<Node, Point>> globalPositions = new HashMap<>();
     private final List<Edge> edgesToPaint = new ArrayList<>();
 
-    private Node selectedNode = null;  // Track the selected node
+    private Node selectedNode = null;
 
     public GraphPanel(DepAnalyserView parent) {
         this.parent = parent;
@@ -54,7 +52,6 @@ public class GraphPanel extends JPanel {
             }
         };
     }
-
 
     public void resetSelectedNode() {
         selectedNode = null;
@@ -171,7 +168,7 @@ public class GraphPanel extends JPanel {
                     g2.setColor(ARROW_BODY_COLOR);
                     g2.setStroke(new BasicStroke(EDGE_STROKE_WIDTH));
                 }
-                drawArrow(g2, adjustedCoord.first, adjustedCoord.second);
+                drawArrow(g2, adjustedCoord.getFirst(), adjustedCoord.getSecond());
             }
         }
     }

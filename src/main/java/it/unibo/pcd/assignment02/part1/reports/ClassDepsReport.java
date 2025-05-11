@@ -1,15 +1,13 @@
 package it.unibo.pcd.assignment02.part1.reports;
 import com.github.javaparser.ast.CompilationUnit;
-import io.vertx.core.json.JsonObject;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class ClassDepsReport extends Report {
     private final Path classPath;
     private final String packageDeclaration;
-    private final String topLevelType;;
+    private final String topLevelType;
 
     public ClassDepsReport(Path classPath, String packageDeclaration, String topLevelType, Set<String> types, Set<String> dependencies) {
         super(types, dependencies);

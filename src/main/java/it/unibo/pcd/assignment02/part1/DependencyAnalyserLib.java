@@ -6,7 +6,15 @@ import it.unibo.pcd.assignment02.part1.reports.PackageDepsReport;
 import it.unibo.pcd.assignment02.part1.reports.ProjectDepsReport;
 
 import java.nio.file.Path;
-
+/**
+ * A library interface for analyzing Java source file dependencies asynchronously.
+ * <p>
+ * This interface provides methods to analyze dependencies at three different levels of granularity:
+ * - individual class source files
+ * - entire Java packages (folders)
+ * - whole project directories
+ * @author Tiziano Vuksan - tiziano.vuksan@studio.unibo.it
+ */
 public interface DependencyAnalyserLib {
     /** Asynchronously analyzes the dependencies of the specified class source file.
      *

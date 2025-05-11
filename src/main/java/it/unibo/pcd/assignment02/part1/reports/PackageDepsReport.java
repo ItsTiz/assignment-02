@@ -1,7 +1,5 @@
 package it.unibo.pcd.assignment02.part1.reports;
 
-import io.vertx.core.json.JsonObject;
-
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.List;

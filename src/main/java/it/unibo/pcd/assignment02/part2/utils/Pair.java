@@ -1,19 +1,19 @@
 package it.unibo.pcd.assignment02.part2.utils;
 
 public class Pair<A, B> {
-    public final A first;
-    public final B second;
+    private final A first;
+    private final B second;
 
     public Pair(A first, B second) {
         this.first = first;
         this.second = second;
     }
 
-    public A first(){
+    public A getFirst(){
         return first;
     }
 
-    public B second(){
+    public B getSecond(){
         return second;
     }
 }

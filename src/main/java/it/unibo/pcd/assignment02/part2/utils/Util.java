@@ -1,7 +1,5 @@
 package it.unibo.pcd.assignment02.part2.utils;
 
-import java.util.Arrays;
-
 public class Util {
 
     public static void log(String msg) {
